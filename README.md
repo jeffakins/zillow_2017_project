@@ -10,6 +10,10 @@
 - Property taxes are assessed at the county level; therefore, we would like to know what states and counties these are located in.
 - Clearly show the distribution of tax rates for each county.
 
+## Executive Summary
+- 
+- 
+
 ## Deliverables
 - A report in the form of a presentation, verbal supported by slides.
 - The report/presentation slides should summarize your findings about the drivers of the single unit property values. This will come from the analysis you do during the exploration phase of the pipeline. In the report, you should have visualizations that support your main points.
@@ -18,3 +22,26 @@
  - Evaluate your model by computing the model metrics and comparing against a baseline.
  - Any .py files necessary to reproduce your work.
  - This README.md file.
+
+### Data dictionary
+
+## Project Specifications
+
+### Plan:
+- Determine Data needed
+- Bring in appropriate data from Zillow database in SQL (Acquire)
+- Prep
+- Explore
+- Model
+- Iterate - meaning attempt to make the model better
+- Deliver 
+
+### Acquire
+
+### Prep
+
+### Explore
+
+### Model & Evaluate
+
+## Conclusion
