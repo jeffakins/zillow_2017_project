@@ -9,6 +9,7 @@ import os
 import sklearn.preprocessing
 from sklearn.model_selection import train_test_split
 
+#---------------------------------------------------------------------------------------------
 #---------------------------Connection Info Function------------------------------------------
 
 # Connection information from the env file for the mySQL Server
@@ -17,7 +18,8 @@ def get_connection(db, user=env.username, host=env.hostname, password=env.passwo
     connection_info = f'mysql+pymysql://{user}:{password}@{host}/{db}'
     return connection_info
 
-#---------------------------Data Base Functions-----------------------------------------------
+#---------------------------------------------------------------------------------------------
+#---------------------------Data Base Function------------------------------------------------
 
 # Function to retrieve the 2017 Zillow Property Data Set from CODEUP's mySQL Server 
 def get_zillow_data():
@@ -33,12 +35,13 @@ def get_zillow_data():
 	            taxvaluedollarcnt, yearbuilt, 
 	            taxamount, fips 
                 FROM properties_2017
-                WHERE propertylandusetypeid = 261;'''   # SQL query
+                WHERE propertylandusetypeid = 261;'''       # SQL query
                                                     
-        db = 'zillow'                                   # Database name
-        df = pd.read_sql(sql, get_connection(db))       # Pandas DataFrame
-        df.to_csv('2017_zillow_hot_month_properties.csv')         # Cache Data
+        db = 'zillow'                                       # Database name
+        df = pd.read_sql(sql, get_connection(db))           # Pandas DataFrame
+        df.to_csv('2017_zillow_hot_month_properties.csv')   # Cache Data
     return df
+
 
 #---------------------------Function to Clean Zillow Data---------------------------------------
 
@@ -49,7 +52,8 @@ def clean_zillow(zillow):
                                  'calculatedfinishedsquarefeet': 'sqft',
                                  'taxvaluedollarcnt': 'tax_value',
                                  'taxamount': 'tax_amount',
-                                 'yearbuilt': 'year_built'})
+                                 'yearbuilt': 'year_built',
+                                 'regionidzip': 'zipcode'})
 
     zillow = zillow.dropna()    # drop nulls
 
@@ -61,7 +65,7 @@ def clean_zillow(zillow):
 
     return zillow
 
-#---------------------------Function to Remove Outliers from Zillow Data--------------------------
+#---------------------------Function to Remove Outliers from Zillow Data--------------------
 
 # Function to remove outliers:
 def remove_outliers(df, k=1.5, col_list=[]):
@@ -80,7 +84,7 @@ def remove_outliers(df, k=1.5, col_list=[]):
         
     return df
 
-#---------------------------Train, Val, Test Function---------------------------------------------
+#---------------------------Train, Val, Test Function---------------------------------------
 
 def train_validate_test_split(df, seed=123):
     '''
@@ -92,7 +96,7 @@ def train_validate_test_split(df, seed=123):
     return train, validate, test
 
 
-#---------------------------Function run all of the Above on Zillow Data (before scaling)----------
+#---------------------Function run all of the Above on Zillow Data (before scaling)----------
 
 def wrangle_zillow():
     '''Function to get zillow data from SQL server, clean it, 
@@ -110,8 +114,42 @@ def wrangle_zillow():
 
     return train, validate, test
 
+#---------------------------------------------------------------------------------------------
+#---------------------------Zipcode Function--------------------------------------------------
 
-#---------------------------Function to Scale Zillow Data-----------------------------------------
+def get_zipcode_data():
+    '''
+    Function to retrieve the 2016 Zillow average home price per zipcode data from CODEUP's mySQL Server
+    '''
+    if os.path.isfile('2016_zillow_zipcodes.csv'):
+        df = pd.read_csv('2016_zillow_zipcodes.csv', index_col=0)  # If csv file exists read in data from csv file.
+    else:
+        sql = '''
+                SELECT COUNT(regionidzip) AS zipcode_count, 
+                    regionidzip AS zipcode, 
+                    ROUND(AVG(taxvaluedollarcnt),0) AS zipcode_avg_price
+                FROM properties_2016
+                WHERE propertylandusetypeid = 261
+                GROUP BY regionidzip
+                ORDER BY AVG(taxvaluedollarcnt) DESC;'''   # SQL query
+                                                    
+        db = 'zillow'                                   # Database name
+        df = pd.read_sql(sql, get_connection(db))       # Pandas DataFrame
+        df.to_csv('2016_zillow_zipcodes.csv')         # Cache Data
+    return df
+
+#---------------------------Function to clean Zipcode Data--------------------------------------------------
+
+def clean_zipcode(zips):
+    '''Function removes nulls from zipcode data and converts all numbers to int'''
+    zips = get_zipcode_data()
+    zips = zips.replace(r'^\s*$', np.nan, regex=True)
+    zips = zips.dropna()
+    zips = zips.astype('int64')
+    return zips
+
+#---------------------------------------------------------------------------------------------
+#---------------------------Function to Scale Zillow Data-------------------------------------
 
 # Function to Scale Zillow Data using min max scaler
 def zillow_scaler(train, validate, test):
@@ -134,7 +172,8 @@ def zillow_scaler(train, validate, test):
 
     return train, validate, test
 
-
+#---------------------------------------------------------------------------------------------
+#---------------------------Function to split T, V, T into X, y-------------------------------
 
 def zillow_xy(train, validate, test):
     '''Function to split train, validate, and test
