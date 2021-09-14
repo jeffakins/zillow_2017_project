@@ -6,6 +6,8 @@ import env
 import pandas as pd
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 import sklearn.preprocessing
 from sklearn.model_selection import train_test_split
 
@@ -146,7 +148,7 @@ def wrangle_zillow():
     zillow.fips = zillow.fips.astype('int64')
     zillow.zipcode = zillow.zipcode.astype('int64')
 
-    zillow.drop(columns=['zipcode_count', '_merge'])
+    zillow = zillow.drop(columns=['zipcode_count', '_merge'])
 
     return zillow
 
@@ -157,7 +159,7 @@ def wrangle_zillow():
 # Function to Scale Zillow Data using min max scaler
 def zillow_scaler(train, validate, test):
     '''Min Max Scaler on Train, Validate, Test'''
-    columns_to_scale = ['bedrooms', 'bathrooms', 'sqft', 'tax_value', 'tax_amount']
+    columns_to_scale = ['bedrooms', 'bathrooms', 'sqft', 'zipcode_avg_price']
 
     # 1. create the object
     scaler = sklearn.preprocessing.MinMaxScaler()
@@ -166,12 +168,12 @@ def zillow_scaler(train, validate, test):
     scaler.fit(train[columns_to_scale])
 
     # Name Index for scaled columns:
-    columns_scaled = ['bedrooms_scaled', 'bathrooms_scaled', 'sqft_scaled', 'tax_value_scaled', 'tax_amount_scaled']
+    # columns_scaled = ['bedrooms_scaled', 'bathrooms_scaled', 'sqft_scaled', 'tax_value_scaled', 'tax_amount_scaled']
     
     # 3. use the object (use the min, max to do the transformation)
-    train[columns_scaled] = scaler.transform(train[columns_to_scale])
-    validate[columns_scaled] = scaler.transform(validate[columns_to_scale])
-    test[columns_scaled] = scaler.transform(test[columns_to_scale])
+    train = scaler.transform(train[columns_to_scale])
+    validate = scaler.transform(validate[columns_to_scale])
+    test = scaler.transform(test[columns_to_scale])
 
     return train, validate, test
 
@@ -205,3 +207,17 @@ def zillow_xy(train, validate, test):
     y_test = test.tax_value
 
     return X_train, y_train, X_validate, y_validate, X_test, y_test
+
+
+
+#---------------------------------------------------------------------------------------------
+#---------------------------Plotting----------------------------------------------------------
+def initial_plot(df, x, y):
+    plt.figure(figsize = (9,6), facecolor='aliceblue')
+    sns.set_theme(style='whitegrid')
+    sns.color_palette('tab10')
+
+    sns.lmplot(x=x, y=y, data=df, scatter=True, hue=None, col=None)
+
+    plt.title(f'Plot of No. {x} vs {y} with Regression Line', fontsize = 12, pad=20)
+    plt.show()
