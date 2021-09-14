@@ -8,14 +8,18 @@ FROM properties_2016
 JOIN predictions_2016 USING(id)
 WHERE transactiondate BETWEEN '2016-05-01' AND '2016-09-01';
 
+
+
 -- 2016 Property Average Price by Zip Code
-SELECT COUNT(regionidzip), regionidzip, ROUND(AVG(taxvaluedollarcnt),0)
+SELECT COUNT(regionidzip) AS zipcode_count, 
+	regionidzip AS zipcode, 
+	ROUND(AVG(taxvaluedollarcnt),0) AS zipcode_avg_price
 FROM properties_2016
 WHERE propertylandusetypeid = 261
 GROUP BY regionidzip
 ORDER BY AVG(taxvaluedollarcnt) DESC;
 
--- 2017 Prop
+-- 2017 Single Unit Properties between May and Aug
 SELECT bedroomcnt, bathroomcnt, 
 	calculatedfinishedsquarefeet, 
 	taxvaluedollarcnt, yearbuilt, 

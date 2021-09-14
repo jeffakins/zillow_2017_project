@@ -21,7 +21,8 @@ def get_connection(db, user=env.username, host=env.hostname, password=env.passwo
 #---------------------------------------------------------------------------------------------
 #---------------------------Data Base Function------------------------------------------------
 
-# Function to retrieve the 2017 Zillow Property Data Set from CODEUP's mySQL Server 
+# Function to retrieve the 2017 Zillow Property Data Set from CODEUP's mySQL Server
+ 
 def get_zillow_data():
     '''
     Function to retrieve the 2017 Zillow Property Data Set from CODEUP's mySQL Server
@@ -31,11 +32,14 @@ def get_zillow_data():
     else:
         sql = '''
                 SELECT bedroomcnt, bathroomcnt, 
-	            calculatedfinishedsquarefeet, 
-	            taxvaluedollarcnt, yearbuilt, 
-	            taxamount, fips 
+                    calculatedfinishedsquarefeet, 
+                    taxvaluedollarcnt, yearbuilt, 
+                    taxamount, fips, regionidzip 
                 FROM properties_2017
-                WHERE propertylandusetypeid = 261;'''       # SQL query
+                JOIN predictions_2017 USING(id)
+                WHERE propertylandusetypeid = 261
+                    AND transactiondate BETWEEN '2017-05-01' AND '2017-09-01';'''       
+                # SQL query
                                                     
         db = 'zillow'                                       # Database name
         df = pd.read_sql(sql, get_connection(db))           # Pandas DataFrame
@@ -55,17 +59,12 @@ def clean_zillow(zillow):
                                  'yearbuilt': 'year_built',
                                  'regionidzip': 'zipcode'})
 
+    zillow = zillow.replace(r'^\s*$', np.nan, regex=True) # Format nulls
     zillow = zillow.dropna()    # drop nulls
-
-    # Change bedroom count, year built, calculated finished squarefeet, and fips value type to int
-    zillow.bedrooms = zillow.bedrooms.astype('int64')
-    zillow.sqft = zillow.sqft.astype('int64')
-    zillow.year_built = zillow.year_built.astype('int64')
-    zillow.fips = zillow.fips.astype('int64')
 
     return zillow
 
-#---------------------------Function to Remove Outliers from Zillow Data--------------------
+#---------------------------Function to Remove Outliers from Zillow Data----------------------
 
 # Function to remove outliers:
 def remove_outliers(df, k=1.5, col_list=[]):
@@ -74,45 +73,13 @@ def remove_outliers(df, k=1.5, col_list=[]):
     for col in col_list:
         q1, q3 = df[col].quantile([.1, .9])  # get quartiles; Adjusted to remove bottom and top 10%
         iqr = q3 - q1   # calculate interquartile range
-        
+            
         upper_bound = q3 + k * iqr   # get upper bound
         lower_bound = q1 - k * iqr   # get lower bound
 
         # return dataframe without outliers
-        
         df = df[(df[col] > lower_bound) & (df[col] < upper_bound)]
-        
     return df
-
-#---------------------------Train, Val, Test Function---------------------------------------
-
-def train_validate_test_split(df, seed=123):
-    '''
-    This function takes in a dataframe and an integer for a setting a seed
-    and splits the data into train, validate and test.  
-    '''
-    train_and_validate, test = train_test_split(df.drop(columns=['fips']), random_state=seed)
-    train, validate = train_test_split(train_and_validate)
-    return train, validate, test
-
-
-#---------------------Function run all of the Above on Zillow Data (before scaling)----------
-
-def wrangle_zillow():
-    '''Function to get zillow data from SQL server, clean it, 
-    and then split into train, validate, and test'''
-        # Get Data:
-    zillow = get_zillow_data()
-        # Function to clean the zillow data
-    zillow = clean_zillow(zillow)
-        # Function to remove the outliers of the zillow data so that they do not affect the regression models
-    col_list = ['bedrooms', 'bathrooms', 'sqft', 'tax_value', 'tax_amount']
-    zillow = remove_outliers(zillow, 1.5, col_list)
-        # Function to split the df into train, validate, and test
-    train_and_validate, test = train_test_split(zillow.drop(columns=['fips']), random_state=123)
-    train, validate = train_test_split(train_and_validate)
-
-    return train, validate, test
 
 #---------------------------------------------------------------------------------------------
 #---------------------------Zipcode Function--------------------------------------------------
@@ -138,7 +105,7 @@ def get_zipcode_data():
         df.to_csv('2016_zillow_zipcodes.csv')         # Cache Data
     return df
 
-#---------------------------Function to clean Zipcode Data--------------------------------------------------
+#---------------------------Function to clean Zipcode Data---------------------------------------
 
 def clean_zipcode(zips):
     '''Function removes nulls from zipcode data and converts all numbers to int'''
@@ -147,6 +114,42 @@ def clean_zipcode(zips):
     zips = zips.dropna()
     zips = zips.astype('int64')
     return zips
+
+#---------------------------------------------------------------------------------------------
+#-----------------Function run all of the Above on Zillow Data (before scaling)---------------
+
+def wrangle_zillow():
+    '''Function to get zillow data from SQL server, clean it, 
+    and then combine it will 2016 average home price based on zipcode location'''
+        # Get Zillow Data:
+    zillow = get_zillow_data()
+        # Function to clean the zillow data:
+    zillow = clean_zillow(zillow)
+        # Function to remove the outliers of the zillow data so that they do not affect the regression models:
+    col_list = ['bedrooms', 'bathrooms', 'sqft', 'tax_value', 'tax_amount']
+    zillow = remove_outliers(zillow, 1.5, col_list)
+
+    # Get Zipcode Data:
+    zips = get_zipcode_data()
+    # Clean zipcode data:
+    zips = clean_zipcode(zips)
+
+    # Joining 2016 average home price by zipcode to the zillow df:
+    zillow = zillow.merge(zips, left_on='zipcode', right_on='zipcode', how='outer', indicator=True)
+    # Removing nulls
+    zillow = zillow.dropna()
+
+    # Change bedroom count, year built, calculated finished squarefeet, and fips value type to int
+    zillow.bedrooms = zillow.bedrooms.astype('int64')
+    zillow.sqft = zillow.sqft.astype('int64')
+    zillow.year_built = zillow.year_built.astype('int64')
+    zillow.fips = zillow.fips.astype('int64')
+    zillow.zipcode = zillow.zipcode.astype('int64')
+
+    zillow.drop(columns=['zipcode_count', '_merge'])
+
+    return zillow
+
 
 #---------------------------------------------------------------------------------------------
 #---------------------------Function to Scale Zillow Data-------------------------------------
@@ -170,6 +173,18 @@ def zillow_scaler(train, validate, test):
     validate[columns_scaled] = scaler.transform(validate[columns_to_scale])
     test[columns_scaled] = scaler.transform(test[columns_to_scale])
 
+    return train, validate, test
+
+#---------------------------------------------------------------------------------------------
+#---------------------------Train, Val, Test Function-----------------------------------------
+
+def train_validate_test_split(df, seed=123):
+    '''
+    This function takes in a dataframe and an integer for a setting a seed
+    and splits the data into train, validate and test.  
+    '''
+    train_and_validate, test = train_test_split(df.drop(columns=['fips']), random_state=seed)
+    train, validate = train_test_split(train_and_validate)
     return train, validate, test
 
 #---------------------------------------------------------------------------------------------
