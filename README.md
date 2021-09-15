@@ -26,7 +26,7 @@
 ### Data dictionary
 
 |Index | Column Name | Description | Count | Dtype|
-|---|---|---|---|
+|---|---|---|---|---|
 |0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  |
 |1 |  bathrooms         | Number of bathrooms                                | 29789 non-null | float64|
 |2 |  sqft              | Square footage of the house                        | 29789 non-null | int64  |
