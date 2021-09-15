@@ -1,4 +1,4 @@
-![TELCO Logo](https://lh3.googleusercontent.com/proxy/w0hjSS3KvVmQpSSXUnfGDiN-TsOuK6qwDe29cfb6eRgBP-ULpqjCiTtmSsueUITHdLeIlegGYTg5-_ateni9dwzz6CcO--2cul58-IIOCZ4FMMbh7Ht-g4V5xgywqcxlKm1LzBVmKk8Bozqe)
+![TELCO Logo](http://www.sustainablerealtygroup.com/wp-content/uploads/2016/04/Zestimate-Image.jpg)
 
 # Zillow Regression Project
 ### - by Jeff Akins
@@ -26,17 +26,17 @@
 ### Data dictionary
 Index | Column Name | Description | Count | Dtype
 --|--|--|--
- 
- 0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  
- 1 |  bathrooms         | Number of bathrooms                                | 29789 non-null | float64
- 2 |  sqft              | Square footage of the house                        | 29789 non-null | int64  
- 3 |  tax_value         | Value of the property                              | 29789 non-null | float64
- 4 |  year_built        | Year property was built                            | 29789 non-null | int64  
- 5 |  tax_amount        | Tax amount per property                            | 29789 non-null | float64
- 6 |  fips              | Federal Information Processing Series (FIPS) Codes | 29789 non-null | int64  
- 7 |  zipcode           | Zipcode                                            | 29789 non-null | int64  
- 8 |  zipcode_avg_price | Average home price per zipcode                     | 29789 non-null | int64 
-
+0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  
+1 |  bathrooms         | Number of bathrooms                                | 29789 non-null | float64
+2 |  sqft              | Square footage of the house                        | 29789 non-null | int64  
+3 |  tax_value         | Value of the property                              | 29789 non-null | float64
+4 |  year_built        | Year property was built                            | 29789 non-null | int64  
+5 |  tax_amount        | Tax amount per property                            | 29789 non-null | float64
+6 |  fips              | Federal Information Processing Series (FIPS) Codes | 29789 non-null | int64  
+7 |  zipcode           | Zipcode                                            | 29789 non-null | int64  
+8 |  zipcode_avg_price | Average home price per zipcode                     | 29789 non-null | int64 
+9 |  county            | County Name                                        | 29789 non-null | object 
+10|  state             | State Name                                         | 29789 non-null | object
 ## Project Specifications
 
 ### Plan:

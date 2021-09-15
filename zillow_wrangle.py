@@ -147,8 +147,17 @@ def wrangle_zillow():
     zillow.year_built = zillow.year_built.astype('int64')
     zillow.fips = zillow.fips.astype('int64')
     zillow.zipcode = zillow.zipcode.astype('int64')
-
+    # Drop uneeded columns after merge:
     zillow = zillow.drop(columns=['zipcode_count', '_merge'])
+
+    # fips lacation names:
+    fips = {'fips': [6037, 6059, 6111],
+        'county': ['Los Angeles County', 'Orange County', 'Ventura County'],
+        'state': ['CA', 'CA', 'CA']}
+    # fips dataframe:
+    fips_name = pd.DataFrame(data=fips)
+    # Merge zillow df with fips df: 
+    zillow = zillow.merge(fips_name, left_on='fips', right_on='fips', how='outer', indicator=False)
 
     return zillow
 
@@ -171,9 +180,9 @@ def zillow_scaler(train, validate, test):
     # columns_scaled = ['bedrooms_scaled', 'bathrooms_scaled', 'sqft_scaled', 'tax_value_scaled', 'tax_amount_scaled']
     
     # 3. use the object (use the min, max to do the transformation)
-    train = scaler.transform(train[columns_to_scale])
-    validate = scaler.transform(validate[columns_to_scale])
-    test = scaler.transform(test[columns_to_scale])
+    train[columns_to_scale] = scaler.transform(train[columns_to_scale])
+    validate[columns_to_scale] = scaler.transform(validate[columns_to_scale])
+    test[columns_to_scale] = scaler.transform(test[columns_to_scale])
 
     return train, validate, test
 
