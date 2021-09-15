@@ -24,19 +24,19 @@
  - This README.md file.
 
 ### Data dictionary
-Index | Column Name | Description | Count | Dtype
---|--|--|--
-0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  
-1 |  bathrooms         | Number of bathrooms                                | 29789 non-null | float64
-2 |  sqft              | Square footage of the house                        | 29789 non-null | int64  
-3 |  tax_value         | Value of the property                              | 29789 non-null | float64
-4 |  year_built        | Year property was built                            | 29789 non-null | int64  
-5 |  tax_amount        | Tax amount per property                            | 29789 non-null | float64
-6 |  fips              | Federal Information Processing Series (FIPS) Codes | 29789 non-null | int64  
-7 |  zipcode           | Zipcode                                            | 29789 non-null | int64  
-8 |  zipcode_avg_price | Average home price per zipcode                     | 29789 non-null | int64 
-9 |  county            | County Name                                        | 29789 non-null | object 
-10|  state             | State Name                                         | 29789 non-null | object
+|Index | Column Name | Description | Count | Dtype|
+|---|---|---|---|
+|0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  |
+|1 |  bathrooms         | Number of bathrooms                                | 29789 non-null | float64|
+|2 |  sqft              | Square footage of the house                        | 29789 non-null | int64  |
+|3 |  tax_value         | Value of the property                              | 29789 non-null | float64|
+|4 |  year_built        | Year property was built                            | 29789 non-null | int64  |
+|5 |  tax_amount        | Tax amount per property                            | 29789 non-null | float64|
+|6 |  fips              | Federal Information Processing Series (FIPS) Codes | 29789 non-null | int64  |
+|7 |  zipcode           | Zipcode                                            | 29789 non-null | int64  |
+|8 |  zipcode_avg_price | Average home price per zipcode                     | 29789 non-null | int64  |
+|9 |  county            | County Name                                        | 29789 non-null | object |
+|10|  state             | State Name                                         | 29789 non-null | object |
 ## Project Specifications
 
 ### Plan:
