@@ -73,7 +73,7 @@ def remove_outliers(df, k=1.5, col_list=[]):
     ''' remove top and bottom 10 % of outliers from a list of 
     columns in a dataframe and return that dataframe'''
     for col in col_list:
-        q1, q3 = df[col].quantile([.1, .9])  # get quartiles; Adjusted to remove bottom and top 10%
+        q1, q3 = df[col].quantile([.2, .8])  # get quartiles; Adjusted to remove bottom and top 10%
         iqr = q3 - q1   # calculate interquartile range
             
         upper_bound = q3 + k * iqr   # get upper bound
@@ -127,9 +127,6 @@ def wrangle_zillow():
     zillow = get_zillow_data()
         # Function to clean the zillow data:
     zillow = clean_zillow(zillow)
-        # Function to remove the outliers of the zillow data so that they do not affect the regression models:
-    col_list = ['bedrooms', 'bathrooms', 'sqft', 'tax_value', 'tax_amount']
-    zillow = remove_outliers(zillow, 1.5, col_list)
 
     # Get Zipcode Data:
     zips = get_zipcode_data()
@@ -149,6 +146,10 @@ def wrangle_zillow():
     zillow.zipcode = zillow.zipcode.astype('int64')
     # Drop uneeded columns after merge:
     zillow = zillow.drop(columns=['zipcode_count', '_merge'])
+
+    # Function to remove the outliers of the zillow data so that they do not affect the regression models:
+    col_list = ['bedrooms', 'bathrooms', 'sqft', 'tax_value', 'zipcode_avg_price']
+    zillow = remove_outliers(zillow, 1.5, col_list)
 
     # fips lacation names:
     fips = {'fips': [6037, 6059, 6111],
@@ -194,7 +195,7 @@ def train_validate_test_split(df, seed=123):
     This function takes in a dataframe and an integer for a setting a seed
     and splits the data into train, validate and test.  
     '''
-    train_and_validate, test = train_test_split(df.drop(columns=['fips']), random_state=seed)
+    train_and_validate, test = train_test_split(df, random_state=seed)
     train, validate = train_test_split(train_and_validate)
     return train, validate, test
 
@@ -221,7 +222,9 @@ def zillow_xy(train, validate, test):
 
 #---------------------------------------------------------------------------------------------
 #---------------------------Plotting----------------------------------------------------------
+# Scatterplot:
 def initial_plot(df, x, y):
+    '''Plots initial scatterplot with a trend line'''
     plt.figure(figsize = (9,6), facecolor='aliceblue')
     sns.set_theme(style='whitegrid')
     sns.color_palette('tab10')
@@ -230,3 +233,35 @@ def initial_plot(df, x, y):
 
     plt.title(f'Plot of No. {x} vs {y} with Regression Line', fontsize = 12, pad=20)
     plt.show()
+    return None
+
+# Subplots:
+def zillow_subplots(zillow):
+    '''Plots histogram subplots'''
+    plt.figure(figsize=(16, 3))
+
+    # List of columns
+    cols = [col for col in zillow.columns]
+
+    for i, col in enumerate(cols):
+
+        # i starts at 0, but plot nos should start at 1
+        plot_number = i + 1 
+
+        # Create subplot.
+        plt.subplot(1, len(cols), plot_number)
+
+        # Title with column name.
+        plt.title(col)
+
+        # Display histogram for column.
+        zillow[col].hist(bins=5)
+
+        # Hide gridlines.
+        plt.grid(False)
+        
+        plt.tight_layout()
+        
+        # turn off scientific notation
+        plt.ticklabel_format(useOffset=False)
+    return None
