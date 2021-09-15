@@ -24,6 +24,7 @@
  - This README.md file.
 
 ### Data dictionary
+
 |Index | Column Name | Description | Count | Dtype|
 |---|---|---|---|
 |0 |  bedrooms          | Number of Bedrooms                                 | 29789 non-null | int64  |
@@ -37,6 +38,7 @@
 |8 |  zipcode_avg_price | Average home price per zipcode                     | 29789 non-null | int64  |
 |9 |  county            | County Name                                        | 29789 non-null | object |
 |10|  state             | State Name                                         | 29789 non-null | object |
+
 ## Project Specifications
 
 ### Plan:
