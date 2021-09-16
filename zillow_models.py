@@ -99,13 +99,19 @@ def lasso_lars(X_train, y_train, X_validate, y_validate):
 
 #---------------Tweedie Regressor (GLM)----------------------------------------------------------------
 
-def tweedie_regressor(X_train, y_train, X_validate, y_validate):
-    '''Tweedie regressor for zillow data'''
+def tweedie_regressor(X_train, y_train, X_validate, y_validate, power=1, alpha=0):
+    '''Tweedie regressor for zillow data
+    power = 0: Normal Distribution
+    power = 1: Poisson Distribution
+    power = (1,2): Compound Distribution
+    power = 2: Gamma Distribution
+    power = 3: Inverse Gaussian Distribution'''
+
     y_train = pd.DataFrame(y_train)
     y_validate = pd.DataFrame(y_validate)
 
     # create the model object
-    glm = TweedieRegressor(power=1, alpha=0)
+    glm = TweedieRegressor(power=power, alpha=alpha)
 
     # fit the model to our training data. We must specify the column in y_train, 
     # since we have converted it to a dataframe from a series! 
@@ -123,7 +129,8 @@ def tweedie_regressor(X_train, y_train, X_validate, y_validate):
     # evaluate: rmse
     rmse_validate = mean_squared_error(y_validate.tax_value, y_validate.pred_glm) ** (1/2)
 
-    print("RMSE for GLM using Tweedie, power=1 & alpha=0\nTraining/In-Sample: ", round(rmse_train, 2), 
+    print("RMSE for GLM using Tweedie, power=", power, " & alpha=", alpha, 
+        "\nTraining/In-Sample: ", round(rmse_train, 2), 
         "\nValidation/Out-of-Sample: ", round(rmse_validate, 2))
     return y_validate
 
@@ -131,6 +138,10 @@ def tweedie_regressor(X_train, y_train, X_validate, y_validate):
 #---------------Polynomial Regression------------------------------------------------------------------
 
 def polynomial_regression(X_train, y_train, X_validate, y_validate, degree=2):
+    '''Function to model the zillow data using a polynomial linear regression'''
+    y_train = pd.DataFrame(y_train)
+    y_validate = pd.DataFrame(y_validate)
+
     pf = PolynomialFeatures(degree)
 
     # fit and transform X_train_scaled
@@ -145,23 +156,24 @@ def polynomial_regression(X_train, y_train, X_validate, y_validate, degree=2):
 
     # fit the model to our training data. We must specify the column in y_train, 
     # since we have converted it to a dataframe from a series! 
-    lm2.fit(X_train_degree2, y_train.G3)
+    lm2.fit(X_train_degree2, y_train.tax_value)
 
     # predict train
-    y_train['G3_pred_lm2'] = lm2.predict(X_train_degree2)
+    y_train['pred_lm2'] = lm2.predict(X_train_degree2)
 
     # evaluate: rmse
-    rmse_train = mean_squared_error(y_train.G3, y_train.G3_pred_lm2)**(1/2)
+    rmse_train = mean_squared_error(y_train.tax_value, y_train.pred_lm2)**(1/2)
 
     # predict validate
-    y_validate['G3_pred_lm2'] = lm2.predict(X_validate_degree2)
+    y_validate['pred_lm2'] = lm2.predict(X_validate_degree2)
 
     # evaluate: rmse
-    rmse_validate = mean_squared_error(y_validate.G3, y_validate.G3_pred_lm2)**(1/2)
+    rmse_validate = mean_squared_error(y_validate.tax_value, y_validate.pred_lm2)**(1/2)
 
-    print("RMSE for Polynomial Model, degrees=2\nTraining/In-Sample: ", rmse_train, 
+    print("RMSE for Polynomial Model, degrees=",degree, "\nTraining/In-Sample: ", rmse_train, 
         "\nValidation/Out-of-Sample: ", rmse_validate)
 
+    return y_validate
 
 #------------------------------------------------------------------------------------------------------
 #---------------Compare Regression---------------------------------------------------------------------
@@ -219,11 +231,53 @@ def model_compare(X_train, y_train, X_validate, y_validate):
                'lasso_alpha_1',
                metric_df)
 
-    # Tweedie regressor
-    y_validate_t = tweedie_regressor(X_train, y_train, X_validate, y_validate)
-    metric_df = make_metric_df(y_validate_t.tax_value,
-                y_validate_t.pred_glm,
-                'glm_poisson',
+    # Tweedie:
+        # power = 0: Normal Distribution
+        # power = 1: Poisson Distribution
+        # power = (1,2): Compound Distribution
+        # power = 2: Gamma Distribution
+        # power = 3: Inverse Gaussian Distribution
+
+        # Tweedie regressor - Power 0
+    y_validate_t0 = tweedie_regressor(X_train, y_train, X_validate, y_validate, power=0, alpha=0)
+    metric_df = make_metric_df(y_validate_t0.tax_value,
+                y_validate_t0.pred_glm,
+                'GLM Normal',
+                metric_df)
+    
+        # Tweedie regressor - Power 1
+    y_validate_t1 = tweedie_regressor(X_train, y_train, X_validate, y_validate, power=1, alpha=0)
+    metric_df = make_metric_df(y_validate_t1.tax_value,
+                y_validate_t1.pred_glm,
+                'GLM Poisson',
+                metric_df)
+
+        # Tweedie regressor - Power 2
+    y_validate_t2 = tweedie_regressor(X_train, y_train, X_validate, y_validate, power=2, alpha=0)
+    metric_df = make_metric_df(y_validate_t2.tax_value,
+                y_validate_t2.pred_glm,
+                'GLM Gamma',
+                metric_df)
+
+        # Tweedie regressor - Power 3
+    y_validate_t3 = tweedie_regressor(X_train, y_train, X_validate, y_validate, power=3, alpha=0)
+    metric_df = make_metric_df(y_validate_t3.tax_value,
+                y_validate_t3.pred_glm,
+                'GLM Inverse Gauss',
+                metric_df)
+    
+    # Polynomial deg 2
+    y_validate_poly = polynomial_regression(X_train, y_train, X_validate, y_validate, degree=2)
+    metric_df = make_metric_df(y_validate_poly.tax_value,
+                y_validate_poly.pred_lm2,
+                'Ploynomial 2deg',
+                metric_df)
+
+    # Polynomial deg 3
+    y_validate_poly = polynomial_regression(X_train, y_train, X_validate, y_validate, degree=3)
+    metric_df = make_metric_df(y_validate_poly.tax_value,
+                y_validate_poly.pred_lm2,
+                'Ploynomial 3deg',
                 metric_df)
 
     return metric_df
