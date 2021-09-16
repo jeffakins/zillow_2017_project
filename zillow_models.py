@@ -1,6 +1,6 @@
 # This file will be used to store the code for the Zillow models
-
-#---------------Imports----------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+#---------------Imports--------------------------------------------------------------------------------
 
 import pandas as pd
 import numpy as np
@@ -11,7 +11,9 @@ from sklearn.metrics import explained_variance_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#---------------Baseline---------------------------------------------------------------------
+
+#------------------------------------------------------------------------------------------------------
+#---------------Models---------------------------------------------------------------------------------
 
 def baseline(y_train, y_validate):
     '''Function that will create a baseline prediction'''
@@ -37,7 +39,7 @@ def baseline(y_train, y_validate):
     return y_train, y_validate
 
 
-#---------------Linear Regression (OLS)------------------------------------------------------
+#---------------Linear Regression (OLS)---------------------------------------------------------------
 
 def linear_regression(X_train, y_train, X_validate, y_validate):
     '''Function to perform a linear regression on our data'''
@@ -64,7 +66,7 @@ def linear_regression(X_train, y_train, X_validate, y_validate):
     return rmse_validate, y_validate
     
 
-#---------------LassoLars--------------------------------------------------------------------
+#---------------LassoLars------------------------------------------------------------------------------
 
 def lasso_lars(X_train, y_train, X_validate, y_validate):
     '''LassoLars regression for Zillow'''
@@ -95,7 +97,7 @@ def lasso_lars(X_train, y_train, X_validate, y_validate):
     return y_validate
 
 
-#---------------Tweedie Regressor (GLM)------------------------------------------------------
+#---------------Tweedie Regressor (GLM)----------------------------------------------------------------
 
 def tweedie_regressor(X_train, y_train, X_validate, y_validate):
     '''Tweedie regressor for zillow data'''
@@ -126,11 +128,44 @@ def tweedie_regressor(X_train, y_train, X_validate, y_validate):
     return y_validate
 
 
-#---------------Polynomial Regression--------------------------------------------------------
+#---------------Polynomial Regression------------------------------------------------------------------
+
+def polynomial_regression(X_train, y_train, X_validate, y_validate, degree=2):
+    pf = PolynomialFeatures(degree)
+
+    # fit and transform X_train_scaled
+    X_train_degree2 = pf.fit_transform(X_train)
+
+    # transform X_validate_scaled & X_test_scaled
+    X_validate_degree2 = pf.transform(X_validate)
+    # X_test_degree2 = pf.transform(X_test)
+
+    # create the model object
+    lm2 = LinearRegression(normalize=True)
+
+    # fit the model to our training data. We must specify the column in y_train, 
+    # since we have converted it to a dataframe from a series! 
+    lm2.fit(X_train_degree2, y_train.G3)
+
+    # predict train
+    y_train['G3_pred_lm2'] = lm2.predict(X_train_degree2)
+
+    # evaluate: rmse
+    rmse_train = mean_squared_error(y_train.G3, y_train.G3_pred_lm2)**(1/2)
+
+    # predict validate
+    y_validate['G3_pred_lm2'] = lm2.predict(X_validate_degree2)
+
+    # evaluate: rmse
+    rmse_validate = mean_squared_error(y_validate.G3, y_validate.G3_pred_lm2)**(1/2)
+
+    print("RMSE for Polynomial Model, degrees=2\nTraining/In-Sample: ", rmse_train, 
+        "\nValidation/Out-of-Sample: ", rmse_validate)
 
 
+#------------------------------------------------------------------------------------------------------
+#---------------Compare Regression---------------------------------------------------------------------
 
-#---------------Compare Regression--------------------------------------------------------
 def make_metric_df(y, y_pred, model_name, metric_df):
     if metric_df.size ==0:
         metric_df = pd.DataFrame(data=[
@@ -156,7 +191,7 @@ def make_metric_df(y, y_pred, model_name, metric_df):
                     y_pred)
             }, ignore_index=True)
 
-#---------------Compare Regression--------------------------------------------------------
+#---------------Compare Regression---------------------------------------------------------------------
 def model_compare(X_train, y_train, X_validate, y_validate):
     '''Function to compare regression models'''
     # create the metric_df as a blank dataframe
@@ -193,7 +228,9 @@ def model_compare(X_train, y_train, X_validate, y_validate):
 
     return metric_df
 
-#---------------plot Regression--------------------------------------------------------
+
+#------------------------------------------------------------------------------------------------------
+#---------------plot Regression------------------------------------------------------------------------
 def plot_baseline(y_train, y_validate):
     y_train, y_validate = baseline(y_train, y_validate)
     # plot to visualize actual vs predicted. 
@@ -205,5 +242,3 @@ def plot_baseline(y_train, y_validate):
     plt.show()
     return None
 
-
-#---------------plot Regression--------------------------------------------------------
