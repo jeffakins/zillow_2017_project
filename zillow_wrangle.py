@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import seaborn as sns
 import sklearn.preprocessing
 from sklearn.model_selection import train_test_split
@@ -229,8 +230,11 @@ def initial_plot(df, x, y):
     sns.set_theme(style='whitegrid')
     sns.color_palette('tab10')
 
+    #graph = sns.lmplot(x=x, y=y, data=df, scatter=True, hue=None, col=None)
     sns.lmplot(x=x, y=y, data=df, scatter=True, hue=None, col=None)
 
+    #ylabels = [(lambda x, pos: '{:.1f} m'.format(x / 1_000_000)]
+    #graph.set_ylabels(ylabels)
     plt.title(f'Plot of No. {x} vs {y} with Regression Line', fontsize = 12, pad=20)
     plt.show()
     return None
