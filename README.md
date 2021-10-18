@@ -56,11 +56,11 @@
 
 ### Prep
 - Top and Bottom 20% of outliers were removed.
-- Uneeded columns were removed
+- Unneeded columns were removed
 - The remaining data, aside from the target, was scaled using a min-max scaler
 
 ### Explore
-- Scatterplots with trend lines are used to look for obvious coorelations
+- Scatterplots with trend lines are used to look for obvious correlations
 - Boxplots are used to show the distributions
 - A heatmap was generated to show correlation strength between features
 - Statistical tests were used to confirm correlation between the target and other features
@@ -71,6 +71,8 @@
  - Ordinary Least Squares
  - LASSO + LARS (alpha = 1)
  - Generalized Linear Model (power = 1: Poisson Distribution)
+ - Polynomial 2nd Degree
+ - Polynomial 3rd Degree
 
 ## Conclusion
-- The OLS and Lasso + Lars produced the best results with a 19% improvement over the baseline model (comparing validation data). Therefore, these models do show that they could be used to produce a prediction for home values; however, the error is still high at over $180,000 RSME. Additional refining would need to be done in order to use this model as a reliable predictor of home values.
+- All of the models were relatively close, but the Polynomial 3rd degree regression model produced the best results with a 20% improvement over the mean baseline model (comparing validation data). Therefore, these models do show that they could be used to produce a prediction for home values; however, the error is still high at over $180,000 RSME. Additional refining would need to be done in order to use this model as a reliable predictor of home values.
